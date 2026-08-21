@@ -1,7 +1,7 @@
 {
   "name": "cosbar-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev src/server.ts",
@@ -11,7 +11,7 @@
     "seed": "ts-node seed.ts"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "keywords": [],
   "author": "",
