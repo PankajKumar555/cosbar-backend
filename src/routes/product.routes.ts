@@ -21,14 +21,14 @@ router.post(
   authenticateUser,
   setEntityType("products"),
   upload.array("images", 10),
-  createProduct
+  createProduct,
 );
 router.put(
   "/productId/:id",
   authenticateUser,
   setEntityType("products"),
   upload.array("images", 10),
-  updateProduct
+  updateProduct,
 );
 router.delete("/productId/:id", authenticateUser, deleteProduct);
 

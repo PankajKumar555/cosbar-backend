@@ -3,14 +3,23 @@ import { Product } from "../models/Product";
 import fs from "fs";
 import path from "path";
 
-export const getProducts = async (_req: Request, res: Response) => {
-  const products = await Product.find().lean();
-  res.json(products);
+// GET all products
+export const getProducts = async (
+  _req: Request,
+  res: Response,
+): Promise<any> => {
+  try {
+    const products = await Product.find().lean();
+    res.json(products);
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
 
 export const getProductById = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const { id } = req.params;
@@ -29,7 +38,7 @@ export const getProductById = async (
 
 export const getProductsByCategory = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const { categoryId } = req.params;
@@ -50,7 +59,7 @@ export const getProductsByCategory = async (
 
 export const createProduct = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const files = req.files as Express.Multer.File[];
@@ -63,9 +72,7 @@ export const createProduct = async (
 
     const imageUrls = files.map((file) => {
       const entityType = (req as any).entityType || "products";
-      return `${req.protocol}://${req.get("host")}/uploads/${entityType}/${
-        file.filename
-      }`;
+      return `${req.protocol}://${req.get("host")}/uploads/${entityType}/${file.filename}`;
     });
 
     const parseArray = (field: any): string[] => {
@@ -120,7 +127,7 @@ export const createProduct = async (
 
 export const updateProduct = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const { productId, imageUrls = [], ...restFields } = req.body;
@@ -140,8 +147,9 @@ export const updateProduct = async (
 
     const existingImages = product.images || [];
 
+    // Delete removed images from disk
     const removedImages = existingImages.filter(
-      (img) => !imageUrls.includes(img)
+      (img) => !imageUrls.includes(img),
     );
     removedImages.forEach((url: string) => {
       const filename = url.split("/uploads/products/")[1];
@@ -149,7 +157,7 @@ export const updateProduct = async (
         const fullPath = path.join(
           __dirname,
           "../../uploads/products",
-          filename
+          filename,
         );
         if (fs.existsSync(fullPath)) {
           fs.unlinkSync(fullPath);
@@ -161,9 +169,7 @@ export const updateProduct = async (
 
     if (req.files && Array.isArray(req.files)) {
       req.files.forEach((file: Express.Multer.File) => {
-        const newImageUrl = `${req.protocol}://${req.get(
-          "host"
-        )}/uploads/products/${file.filename}`;
+        const newImageUrl = `${req.protocol}://${req.get("host")}/uploads/products/${file.filename}`;
         updatedImages.push(newImageUrl);
       });
     }
@@ -184,19 +190,18 @@ export const updateProduct = async (
       "productType",
     ];
 
-    const updateData: any = {
-      images: updatedImages,
-    };
+    const updateData: any = { images: updatedImages };
 
     allowedFields.forEach((field) => {
       if (restFields[field] !== undefined) {
         updateData[field] = restFields[field];
       }
     });
+
     const updatedProduct = await Product.findOneAndUpdate(
       { productId },
       { $set: updateData },
-      { new: true }
+      { new: true },
     );
 
     return res.status(200).json({ success: true, data: updatedProduct });
@@ -208,7 +213,7 @@ export const updateProduct = async (
 
 export const deleteProduct = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const { id } = req.params;
@@ -218,44 +223,38 @@ export const deleteProduct = async (
         .status(400)
         .json({ success: false, message: "Product ID is required" });
     }
-    const product = await Product.findOne({ productId });
 
+    const product = await Product.findOne({ productId });
     if (!product) {
       return res
         .status(404)
         .json({ success: false, message: "Product not found" });
     }
+
+    // Clean up image files
     const imageUrls = product.images || [];
-    if (imageUrls) {
-      imageUrls.forEach((url: string) => {
-        const imageFileName = url?.split("/uploads/products/")[1];
-        if (imageFileName) {
-          const fullPath = path.join(
-            __dirname,
-            "../../uploads/products",
-            imageFileName
-          );
-          if (fs.existsSync(fullPath)) {
-            try {
-              fs.unlinkSync(fullPath);
-            } catch (error) {
-              console.error(
-                `Failed to delete image file: ${imageFileName}`,
-                error
-              );
-            }
+    imageUrls.forEach((url: string) => {
+      const imageFileName = url?.split("/uploads/products/")[1];
+      if (imageFileName) {
+        const fullPath = path.join(
+          __dirname,
+          "../../uploads/products",
+          imageFileName,
+        );
+        if (fs.existsSync(fullPath)) {
+          try {
+            fs.unlinkSync(fullPath);
+          } catch (error) {
+            console.error(
+              `Failed to delete image file: ${imageFileName}`,
+              error,
+            );
           }
         }
-      });
-    }
+      }
+    });
 
-    const deleteProduct = await Product.deleteOne({ productId: productId });
-
-    if (!deleteProduct) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
-    }
+    await Product.deleteOne({ productId });
 
     return res
       .status(200)

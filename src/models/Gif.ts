@@ -9,31 +9,16 @@ export interface IGif extends Document {
   image?: string;
 }
 
-const gifSchema: Schema<IGif> = new Schema({
-  name: {
-    type: String,
-    required: true,
+const gifSchema: Schema<IGif> = new Schema(
+  {
+    name: { type: String, required: true },
+    categoryName: { type: String, required: true },
+    categoryId: { type: Number, required: true },
+    productName: { type: String, required: true },
+    productId: { type: Number, required: true },
+    image: { type: String, default: "" },
   },
-  categoryName: {
-    type: String,
-    required: true,
-  },
-  categoryId: {
-    type: Number,
-    required: true,
-  },
-  productName: {
-    type: String,
-    required: true,
-  },
-  productId: {
-    type: Number,
-    required: true,
-  },
-  image: {
-    type: String,
-    default: "",
-  },
-});
+  { timestamps: true },
+);
 
 export const Gif: Model<IGif> = mongoose.model<IGif>("Gif", gifSchema);

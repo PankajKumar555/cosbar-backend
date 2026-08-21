@@ -3,7 +3,7 @@ import { Product } from "../models/Product";
 
 export const searchProducts = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<any> => {
   try {
     const { search } = req.query;
@@ -13,16 +13,20 @@ export const searchProducts = async (
         .json({ success: false, message: "Search key is required." });
     }
 
+    // Search across product name and category
     const query = {
       $or: [
         { productName: { $regex: search, $options: "i" } },
-        // { category: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+        { productType: { $regex: search, $options: "i" } },
       ],
     };
 
-    const products = await Product.find(query);
+    const products = await Product.find(query).limit(20).lean();
 
-    res.status(200).json({ success: true, data: products });
+    res
+      .status(200)
+      .json({ success: true, data: products, count: products.length });
   } catch (error) {
     console.error("Search error:", error);
     res.status(500).json({ success: false, message: "Server error." });

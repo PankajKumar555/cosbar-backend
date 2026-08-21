@@ -6,13 +6,16 @@ interface ICategory extends Document {
   image: string;
 }
 
-const categorySchema = new mongoose.Schema<ICategory>({
-  categoryName: { type: String, required: true },
-  categoryId: { type: Number || String, required: true, unique: true },
-  image: { type: String, required: true },
-});
+const categorySchema = new mongoose.Schema<ICategory>(
+  {
+    categoryName: { type: String, required: true },
+    categoryId: { type: Number, required: true, unique: true },
+    image: { type: String, required: true },
+  },
+  { timestamps: true },
+);
 
 export const Category: Model<ICategory> = mongoose.model<ICategory>(
   "Category",
-  categorySchema
+  categorySchema,
 );

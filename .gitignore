@@ -9,8 +9,10 @@ logs
 *.log
 npm-debug.log*
 
-# Environment variables
+# Environment variables — never commit real credentials, only .env.example
 .env
+.env.*
+!.env.example
 
 # OS files
 .DS_Store

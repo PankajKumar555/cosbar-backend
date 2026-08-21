@@ -4,7 +4,8 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
-  role: "user" | "admin";
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
 }
 
 const userSchema = new Schema(
@@ -12,9 +13,10 @@ const userSchema = new Schema(
     username: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ["user", "admin"], default: "user" },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true },
 );
 
-export const User: Model<IUser> = model<IUser>("User", userSchema);
+export const PublicUser: Model<IUser> = model<IUser>("PublicUser", userSchema);

@@ -11,22 +11,25 @@ interface IVideo extends Document {
   video: string;
 }
 
-const videoSchema = new mongoose.Schema<IVideo>({
-  categoryName: { type: String, required: true },
-  categoryId: { type: Number || String, required: true },
-  productName: { type: String, required: true },
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-    required: true,
+const videoSchema = new mongoose.Schema<IVideo>(
+  {
+    categoryName: { type: String, required: true },
+    categoryId: { type: Number, required: true },
+    productName: { type: String, required: true },
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    videoName: { type: String, required: true },
+    videoId: { type: Number, required: true, unique: true },
+    views: { type: Number, required: true },
+    video: { type: String, required: true },
   },
-  videoName: { type: String, required: true },
-  videoId: { type: Number || String, required: true, unique: true },
-  views: { type: Number || String, required: true, unique: true },
-  video: { type: String, required: true },
-});
+  { timestamps: true },
+);
 
 export const Video: Model<IVideo> = mongoose.model<IVideo>(
   "Video",
-  videoSchema
+  videoSchema,
 );
